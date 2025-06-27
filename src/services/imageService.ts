@@ -1,7 +1,7 @@
 /*
  * @Author       : HCLonely
  * @Date         : 2025-06-27 09:57:01
- * @LastEditTime : 2025-06-27 21:17:29
+ * @LastEditTime : 2025-06-27 21:22:29
  * @LastEditors  : HCLonely
  * @FilePath     : /ip-sign/src/services/imageService.ts
  * @Description  :
@@ -22,7 +22,7 @@ registerFont(path.join(fontsDir, 'SourceHanSansSC-Bold.otf'), {
   family: 'Source Han Sans SC',
   weight: 'bold'
 });
-registerFont(path.join(fontsDir, 'oldenglishtextmt.TTF'), {
+registerFont(path.join(fontsDir, 'oldenglishtextmt.ttf'), {
   family: 'Old English Text MT'
 });
 
