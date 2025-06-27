@@ -1,0 +1,31 @@
+{
+  "name": "ip-sign",
+  "version": "1.0.0",
+  "description": "IP签名图片生成服务",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "vercel-build": "tsc"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "author": "HCLonely",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.6.2",
+    "canvas": "^2.11.2",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "request-ip": "^3.3.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.10.4",
+    "@types/request-ip": "^0.0.41",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.3.3"
+  }
+}

@@ -1,0 +1,18 @@
+# 环境文件
+.env
+.env.*
+!.env.example
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# 日志文件
+*.log
+
+# 缓存文件
+cache
+
+.history
+
+node_modules
