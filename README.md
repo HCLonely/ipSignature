@@ -121,15 +121,44 @@ https://你的域名/signature
 
 | 变量名 | 必需 | 默认值 | 说明 |
 |--------|------|--------|------|
-| IPINFO_TOKEN | 是* | - | IP地理位置服务令牌，用于获取访问者的地理位置信息 |
-| NSMAO_TOKEN | 是* | - | IP地理位置服务令牌（备选），用于获取访问者的地理位置信息 |
-| OPENWEATHER_API_KEY | 是 | - | OpenWeatherMap API密钥，用于获取天气信息 |
+| IPINFO_TOKEN | 是* | - | [ipinfo.io](https://ipinfo.io) 的 API 令牌，用于获取访问者的地理位置信息 |
+| NSMAO_TOKEN | 是* | - | [nsmao.com](https://api.nsmao.net) 的 API 令牌（备选），用于获取访问者的地理位置信息 |
+| OPENWEATHER_API_KEY | 是 | - | [OpenWeatherMap](https://openweathermap.org/api) 的 API 密钥，用于获取天气信息 |
 | BACKGROUND_IMAGE_URL | 否 | - | 背景图片URL，仅支持 jpg, jpeg, png, gif 格式 |
 | PORT | 否 | 3000 | 服务器端口 |
 | DEBUG | 否 | false | 调试模式，设置为 true 时显示详细错误信息 |
 | NODE_ENV | 否 | development | 运行环境，生产环境请设置为 production |
 
 \* IPINFO_TOKEN 和 NSMAO_TOKEN 至少需要配置其中一个
+
+## API 服务说明
+
+本项目使用了以下第三方 API 服务：
+
+### IP 地理位置服务
+
+- [ipinfo.io](https://ipinfo.io)
+  - 提供精确的 IP 地理位置信息
+  - 免费套餐每月可查询 50,000 次
+  - [注册获取 API 令牌](https://ipinfo.io/signup)
+
+- [nsmao.com](https://api.nsmao.net)
+  - 备选的 IP 地理位置服务
+  - [获取 API 令牌](https://api.nsmao.net/doc/30)
+
+### 天气服务
+
+- [OpenWeatherMap](https://openweathermap.org/api)
+  - 提供全球天气数据
+  - 免费套餐支持每分钟 60 次调用
+  - [注册获取 API 密钥](https://home.openweathermap.org/users/sign_up)
+
+### 一言服务
+
+- [Hitokoto](https://hitokoto.cn)
+  - 提供一句话服务
+  - 免费使用，无需注册
+  - [API 说明文档](https://developer.hitokoto.cn)
 
 ## 命令行参数
 

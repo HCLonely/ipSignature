@@ -30,19 +30,49 @@ class CacheService {
   private readonly hitokotoCacheDuration = 5 * 60 * 1000;  // 5分钟
   private readonly geoCacheFile = path.join(process.cwd(), 'cache', 'geo-cache.json');
 
+  // 检查文件系统权限
+  private async checkFileSystemPermissions(): Promise<boolean> {
+    try {
+      const testFile = path.join(path.dirname(this.geoCacheFile), '.write-test');
+      await fs.promises.writeFile(testFile, 'test');
+      await fs.promises.unlink(testFile);
+      return true;
+    } catch (error) {
+      console.warn('[缓存] 文件系统不可写，将使用内存缓存');
+      return false;
+    }
+  }
+
   private constructor() {
+    this.initialize();
+  }
+
+  // 异步初始化
+  private async initialize(): Promise<void> {
     // 创建缓存目录
     const cacheDir = path.dirname(this.geoCacheFile);
-    if (!fs.existsSync(cacheDir)) {
+
+    try {
+      // 检查目录是否存在
       try {
-        fs.mkdirSync(cacheDir, { recursive: true });
-      } catch (error) {
-        console.warn('[缓存] 创建缓存目录失败，将使用内存缓存:', error);
-        this.isMemoryOnly = true;
+        await fs.promises.access(cacheDir);
+      } catch {
+        await fs.promises.mkdir(cacheDir, { recursive: true });
       }
+
+      // 检查文件系统权限
+      const hasWritePermission = await this.checkFileSystemPermissions();
+      if (!hasWritePermission) {
+        this.isMemoryOnly = true;
+        return;
+      }
+
+      // 加载持久化的IP数据
+      await this.loadGeoCache();
+    } catch (error) {
+      console.warn('[缓存] 初始化失败，将使用内存缓存:', error);
+      this.isMemoryOnly = true;
     }
-    // 加载持久化的IP数据
-    this.loadGeoCache();
   }
 
   public static getInstance(): CacheService {
@@ -53,12 +83,16 @@ class CacheService {
   }
 
   // 加载持久化的IP数据
-  private loadGeoCache(): void {
+  private async loadGeoCache(): Promise<void> {
     try {
-      if (fs.existsSync(this.geoCacheFile)) {
-        const data = fs.readFileSync(this.geoCacheFile, 'utf-8');
+      await fs.promises.access(this.geoCacheFile);
+      const data = await fs.promises.readFile(this.geoCacheFile, 'utf-8');
+      try {
         this.geoCache = JSON.parse(data);
         console.log('[缓存] 已加载持久化IP数据');
+      } catch (parseError) {
+        console.warn('[缓存] IP数据解析失败，将使用空缓存:', parseError);
+        this.geoCache = {};
       }
     } catch (error) {
       console.warn('[缓存] 加载持久化IP数据失败，将使用内存缓存:', error);
@@ -68,17 +102,20 @@ class CacheService {
   }
 
   // 保存IP数据到文件
-  private saveGeoCache(): void {
+  private async saveGeoCache(): Promise<void> {
     if (this.isMemoryOnly) {
       return;
     }
 
     try {
-      fs.writeFileSync(this.geoCacheFile, JSON.stringify(this.geoCache, null, 2));
+      await fs.promises.writeFile(
+        this.geoCacheFile,
+        JSON.stringify(this.geoCache, null, 2),
+        'utf-8'
+      );
       console.log('[缓存] IP数据已保存到文件');
     } catch (error) {
       console.warn('[缓存] 保存IP数据到文件失败，将保存在内存中:', error);
-      // 继续使用内存中的缓存数据
       this.isMemoryOnly = true;
     }
   }
@@ -94,13 +131,13 @@ class CacheService {
   }
 
   // 设置地理位置缓存
-  public setGeoCache(ip: string, data: GeoData): void {
+  public async setGeoCache(ip: string, data: GeoData): Promise<void> {
     console.log(`[缓存] 保存IP数据: ${ip}`);
     this.geoCache[ip] = {
       data,
       timestamp: Date.now()
     };
-    this.saveGeoCache();
+    await this.saveGeoCache();
   }
 
   // 获取天气缓存
@@ -166,7 +203,7 @@ class CacheService {
 
   // 获取缓存模式
   public getCacheMode(): string {
-    return this.isMemoryOnly ? '仅内存' : '文件+内存';
+    return this.isMemoryOnly ? '仅内存 (文件系统不可写)' : '文件+内存';
   }
 }
 

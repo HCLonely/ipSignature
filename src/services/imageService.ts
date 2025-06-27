@@ -1,10 +1,10 @@
 /*
  * @Author       : HCLonely
  * @Date         : 2025-06-27 09:57:01
- * @LastEditTime : 2025-06-27 21:22:29
+ * @LastEditTime : 2025-06-27 22:20:00
  * @LastEditors  : HCLonely
  * @FilePath     : /ip-sign/src/services/imageService.ts
- * @Description  :
+ * @Description  : 图片生成服务
  */
 import { createCanvas, loadImage, registerFont } from 'canvas';
 import { SignatureData } from '../types/types';

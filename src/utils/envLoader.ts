@@ -1,10 +1,10 @@
 /*
  * @Author       : HCLonely
  * @Date         : 2025-06-27 10:13:17
- * @LastEditTime : 2025-06-27 14:42:32
+ * @LastEditTime : 2025-06-27 22:35:00
  * @LastEditors  : HCLonely
  * @FilePath     : /ip-sign/src/utils/envLoader.ts
- * @Description  :
+ * @Description  : 环境变量加载器
  */
 import dotenv from 'dotenv';
 import path from 'path';

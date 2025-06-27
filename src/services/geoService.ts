@@ -1,10 +1,10 @@
 /*
  * @Author       : HCLonely
  * @Date         : 2025-06-27 09:56:27
- * @LastEditTime : 2025-06-27 15:33:03
+ * @LastEditTime : 2025-06-27 22:18:57
  * @LastEditors  : HCLonely
  * @FilePath     : /ip-sign/src/services/geoService.ts
- * @Description  :
+ * @Description  : 地理位置服务
  */
 import axios from 'axios';
 import { GeoData } from '../types/types';

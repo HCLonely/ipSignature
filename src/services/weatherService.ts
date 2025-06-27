@@ -1,10 +1,10 @@
 /*
  * @Author       : HCLonely
  * @Date         : 2025-06-27 09:56:41
- * @LastEditTime : 2025-06-27 15:18:49
+ * @LastEditTime : 2025-06-27 22:21:00
  * @LastEditors  : HCLonely
  * @FilePath     : /ip-sign/src/services/weatherService.ts
- * @Description  :
+ * @Description  : 天气服务
  */
 import axios from 'axios';
 import { WeatherData } from '../types/types';

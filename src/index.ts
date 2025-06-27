@@ -1,10 +1,10 @@
 /*
  * @Author       : HCLonely
  * @Date         : 2025-06-27 09:57:15
- * @LastEditTime : 2025-06-27 22:03:37
+ * @LastEditTime : 2025-06-27 22:36:06
  * @LastEditors  : HCLonely
  * @FilePath     : /ip-sign/src/index.ts
- * @Description  :
+ * @Description  : 主文件
  */
 // 在文件最顶部加载环境变量
 import './utils/envLoader';
@@ -107,7 +107,7 @@ async function getGeoData(ip: string): Promise<GeoData> {
         console.log('[地理位置] 使用 ipinfo 服务');
         geoData = await getGeoDataByIpInfo(ip);
         console.log(`[地理位置] 保存数据到缓存: ${ip}`);
-        cacheService.setGeoCache(ip, geoData);
+        await cacheService.setGeoCache(ip, geoData);
         return geoData;
       } catch (error) {
         console.error('[地理位置] ipinfo 服务失败:', error);
@@ -116,7 +116,7 @@ async function getGeoData(ip: string): Promise<GeoData> {
           console.log('[地理位置] 尝试使用 nsmao 服务作为备选');
           geoData = await getGeoDataByNsmao(ip);
           console.log(`[地理位置] 保存备选数据到缓存: ${ip}`);
-          cacheService.setGeoCache(ip, geoData);
+          await cacheService.setGeoCache(ip, geoData);
           return geoData;
         }
         throw error;
@@ -128,7 +128,7 @@ async function getGeoData(ip: string): Promise<GeoData> {
       console.log('[地理位置] 使用 nsmao 服务');
       geoData = await getGeoDataByNsmao(ip);
       console.log(`[地理位置] 保存数据到缓存: ${ip}`);
-      cacheService.setGeoCache(ip, geoData);
+      await cacheService.setGeoCache(ip, geoData);
       return geoData;
     }
 
@@ -199,7 +199,7 @@ app.get('/signature', async (req, res) => {
 
     // 获取用户代理信息
     const userAgent = req.headers['user-agent'] || '';
-    console.log(`userAgent: ${userAgent}`);
+    console.log(`[userAgent] ${userAgent}`);
     const systemInfo = parseUserAgent(userAgent);
     console.log(`[系统信息] 操作系统: ${systemInfo.os}, 浏览器: ${systemInfo.browser}`);
 

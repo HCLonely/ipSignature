@@ -4,7 +4,7 @@
  * @LastEditTime : 2025-06-27 22:11:45
  * @LastEditors  : HCLonely
  * @FilePath     : /ip-sign/src/utils/helpers.ts
- * @Description  :
+ * @Description  : 辅助函数
  */
 
 export function formatLocation(city: string, region: string, country: string): string {
