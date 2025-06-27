@@ -4,7 +4,7 @@
   "description": "IP签名图片生成服务",
   "main": "dist/index.js",
   "scripts": {
-    "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
+    "dev": "ts-node src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
     "vercel-build": "tsc"

@@ -1,7 +1,7 @@
 /*
  * @Author       : HCLonely
  * @Date         : 2025-06-27 09:57:01
- * @LastEditTime : 2025-06-27 15:40:16
+ * @LastEditTime : 2025-06-27 16:25:07
  * @LastEditors  : HCLonely
  * @FilePath     : /ip-sign/src/services/imageService.ts
  * @Description  :
@@ -180,7 +180,7 @@ export async function generateSignatureImage(data: SignatureData): Promise<Buffe
   ctx.fillStyle = '#ffffff';
 
   // 添加定位图标
-  ctx.font = '26px "Source Han Sans SC"';
+  // ctx.font = '26px "Source Han Sans SC"';
   ctx.fillText('📍', layout.padding + 15, currentY);
 
   // 绘制网络信息标题
@@ -257,7 +257,7 @@ export async function generateSignatureImage(data: SignatureData): Promise<Buffe
   ctx.font = headerFont;
 
   // 添加温度计图标
-  ctx.font = '26px "Source Han Sans SC"';
+  // ctx.font = '26px "Source Han Sans SC"';
   ctx.fillStyle = '#ffffff';
   ctx.fillText('🌡️', layout.padding + 15, currentY);
 
