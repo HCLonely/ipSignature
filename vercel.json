@@ -9,7 +9,11 @@
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "dist/index.js"
+      "dest": "dist/index.js",
+      "headers": {
+        "x-real-ip": "$http_x_real_ip",
+        "x-forwarded-for": "$http_x_forwarded_for"
+      }
     }
   ],
   "env": {
