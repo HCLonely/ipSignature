@@ -38,7 +38,6 @@ export function getWeatherIconUrl(iconCode: string): string {
 }
 
 export function parseUserAgent(userAgent: string): { os: string; browser: string } {
-  console.log(`userAgent: ${userAgent}`);
   let os = '未知系统';
   let browser = '未知浏览器';
 

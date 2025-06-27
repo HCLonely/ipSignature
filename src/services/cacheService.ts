@@ -1,7 +1,7 @@
 /*
  * @Author       : HCLonely
  * @Date         : 2025-06-27 15:10:15
- * @LastEditTime : 2025-06-27 16:11:37
+ * @LastEditTime : 2025-06-27 21:58:28
  * @LastEditors  : HCLonely
  * @FilePath     : /ip-sign/src/services/cacheService.ts
  * @Description  : 缓存服务
@@ -25,6 +25,7 @@ class CacheService {
   private geoCache: CacheStore = {};
   private weatherCache: CacheStore = {};
   private hitokotoCache: CacheStore = {};
+  private isMemoryOnly = false;
   private readonly weatherCacheDuration = 30 * 60 * 1000;  // 30分钟
   private readonly hitokotoCacheDuration = 5 * 60 * 1000;  // 5分钟
   private readonly geoCacheFile = path.join(process.cwd(), 'cache', 'geo-cache.json');
@@ -33,7 +34,12 @@ class CacheService {
     // 创建缓存目录
     const cacheDir = path.dirname(this.geoCacheFile);
     if (!fs.existsSync(cacheDir)) {
-      fs.mkdirSync(cacheDir, { recursive: true });
+      try {
+        fs.mkdirSync(cacheDir, { recursive: true });
+      } catch (error) {
+        console.warn('[缓存] 创建缓存目录失败，将使用内存缓存:', error);
+        this.isMemoryOnly = true;
+      }
     }
     // 加载持久化的IP数据
     this.loadGeoCache();
@@ -55,18 +61,25 @@ class CacheService {
         console.log('[缓存] 已加载持久化IP数据');
       }
     } catch (error) {
-      console.error('[缓存] 加载持久化IP数据失败:', error);
+      console.warn('[缓存] 加载持久化IP数据失败，将使用内存缓存:', error);
       this.geoCache = {};
+      this.isMemoryOnly = true;
     }
   }
 
   // 保存IP数据到文件
   private saveGeoCache(): void {
+    if (this.isMemoryOnly) {
+      return;
+    }
+
     try {
       fs.writeFileSync(this.geoCacheFile, JSON.stringify(this.geoCache, null, 2));
       console.log('[缓存] IP数据已保存到文件');
     } catch (error) {
-      console.error('[缓存] 保存IP数据失败:', error);
+      console.warn('[缓存] 保存IP数据到文件失败，将保存在内存中:', error);
+      // 继续使用内存中的缓存数据
+      this.isMemoryOnly = true;
     }
   }
 
@@ -149,6 +162,11 @@ class CacheService {
         delete this.hitokotoCache[key];
       }
     });
+  }
+
+  // 获取缓存模式
+  public getCacheMode(): string {
+    return this.isMemoryOnly ? '仅内存' : '文件+内存';
   }
 }
 

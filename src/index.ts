@@ -1,7 +1,7 @@
 /*
  * @Author       : HCLonely
  * @Date         : 2025-06-27 09:57:15
- * @LastEditTime : 2025-06-27 16:51:41
+ * @LastEditTime : 2025-06-27 22:03:37
  * @LastEditors  : HCLonely
  * @FilePath     : /ip-sign/src/index.ts
  * @Description  :
@@ -87,64 +87,81 @@ function isLocalIP(ip: string): boolean {
 
 // 获取地理位置数据
 async function getGeoData(ip: string): Promise<GeoData> {
-  // 检查缓存
-  const cachedGeoData = cacheService.getGeoCache(ip);
-  if (cachedGeoData) {
-    return cachedGeoData;
-  }
+  try {
+    // 检查缓存
+    const cachedGeoData = cacheService.getGeoCache(ip);
+    if (cachedGeoData) {
+      console.log(`[地理位置] 使用缓存数据: ${ip}`);
+      return cachedGeoData;
+    }
 
-  // 检查环境变量中的令牌
-  const ipinfoToken = process.env.IPINFO_TOKEN;
-  const nsmaoToken = process.env.NSMAO_TOKEN;
+    // 检查环境变量中的令牌
+    const ipinfoToken = process.env.IPINFO_TOKEN;
+    const nsmaoToken = process.env.NSMAO_TOKEN;
 
-  let geoData: GeoData;
+    let geoData: GeoData;
 
-  // 优先使用 ipinfo 服务
-  if (ipinfoToken) {
-    try {
-      console.log('[地理位置] 使用 ipinfo 服务');
-      geoData = await getGeoDataByIpInfo(ip);
-      cacheService.setGeoCache(ip, geoData);
-      return geoData;
-    } catch (error) {
-      console.error('[地理位置] ipinfo 服务失败:', error);
-      // 如果有 nsmao 令牌，尝试使用 nsmao 服务作为备选
-      if (nsmaoToken) {
-        console.log('[地理位置] 尝试使用 nsmao 服务作为备选');
-        geoData = await getGeoDataByNsmao(ip);
+    // 优先使用 ipinfo 服务
+    if (ipinfoToken) {
+      try {
+        console.log('[地理位置] 使用 ipinfo 服务');
+        geoData = await getGeoDataByIpInfo(ip);
+        console.log(`[地理位置] 保存数据到缓存: ${ip}`);
         cacheService.setGeoCache(ip, geoData);
         return geoData;
+      } catch (error) {
+        console.error('[地理位置] ipinfo 服务失败:', error);
+        // 如果有 nsmao 令牌，尝试使用 nsmao 服务作为备选
+        if (nsmaoToken) {
+          console.log('[地理位置] 尝试使用 nsmao 服务作为备选');
+          geoData = await getGeoDataByNsmao(ip);
+          console.log(`[地理位置] 保存备选数据到缓存: ${ip}`);
+          cacheService.setGeoCache(ip, geoData);
+          return geoData;
+        }
+        throw error;
       }
-      throw error;
     }
-  }
 
-  // 如果没有 ipinfo 令牌但有 nsmao 令牌
-  if (nsmaoToken) {
-    console.log('[地理位置] 使用 nsmao 服务');
-    geoData = await getGeoDataByNsmao(ip);
-    cacheService.setGeoCache(ip, geoData);
-    return geoData;
-  }
+    // 如果没有 ipinfo 令牌但有 nsmao 令牌
+    if (nsmaoToken) {
+      console.log('[地理位置] 使用 nsmao 服务');
+      geoData = await getGeoDataByNsmao(ip);
+      console.log(`[地理位置] 保存数据到缓存: ${ip}`);
+      cacheService.setGeoCache(ip, geoData);
+      return geoData;
+    }
 
-  // 如果两个令牌都没有
-  throw new Error('未配置地理位置服务令牌 (IPINFO_TOKEN 或 NSMAO_TOKEN)');
+    // 如果两个令牌都没有
+    throw new Error('未配置地理位置服务令牌 (IPINFO_TOKEN 或 NSMAO_TOKEN)');
+  } catch (error) {
+    console.error('[地理位置] 获取数据失败:', error);
+    throw error;
+  }
 }
 
 // 获取天气数据（添加缓存）
 async function getWeatherDataWithCache(lat: string, lon: string): Promise<WeatherData> {
   const location = `${lat},${lon}`;
 
-  // 检查缓存
-  const cachedWeatherData = cacheService.getWeatherCache(location);
-  if (cachedWeatherData) {
-    return cachedWeatherData;
-  }
+  try {
+    // 检查缓存
+    const cachedWeatherData = cacheService.getWeatherCache(location);
+    if (cachedWeatherData) {
+      console.log(`[天气] 使用缓存数据: ${location}`);
+      return cachedWeatherData;
+    }
 
-  // 获取新数据
-  const weatherData = await getWeatherData(lat, lon);
-  cacheService.setWeatherCache(location, weatherData);
-  return weatherData;
+    // 获取新数据
+    console.log(`[天气] 获取新数据: ${location}`);
+    const weatherData = await getWeatherData(lat, lon);
+    console.log(`[天气] 保存数据到缓存: ${location}`);
+    cacheService.setWeatherCache(location, weatherData);
+    return weatherData;
+  } catch (error) {
+    console.error('[天气] 获取数据失败:', error);
+    throw error;
+  }
 }
 
 // 路由
@@ -182,6 +199,7 @@ app.get('/signature', async (req, res) => {
 
     // 获取用户代理信息
     const userAgent = req.headers['user-agent'] || '';
+    console.log(`userAgent: ${userAgent}`);
     const systemInfo = parseUserAgent(userAgent);
     console.log(`[系统信息] 操作系统: ${systemInfo.os}, 浏览器: ${systemInfo.browser}`);
 
@@ -249,6 +267,7 @@ async function startServer() {
       console.log(`[服务器] 正在运行: http://localhost:${PORT}`);
       console.log(`[服务器] 签名端点: http://localhost:${PORT}/signature`);
       console.log(`[服务器] 本地IP处理: ${usePublicIP ? '自动获取公网IP' : '使用本地IP'}`);
+      console.log('[缓存] 模式:', cacheService.getCacheMode());
       console.log('[缓存] IP数据缓存时间: 长期');
       console.log('[缓存] 天气数据缓存时间: 30分钟');
       console.log('[缓存] 一言数据缓存时间: 5分钟');
