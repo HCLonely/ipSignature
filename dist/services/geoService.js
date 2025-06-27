@@ -3,25 +3,38 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getGeoData = getGeoData;
+exports.getGeoDataByIpInfo = getGeoDataByIpInfo;
+exports.getGeoDataByNsmao = getGeoDataByNsmao;
 /*
  * @Author       : HCLonely
  * @Date         : 2025-06-27 09:56:27
- * @LastEditTime : 2025-06-27 09:56:32
+ * @LastEditTime : 2025-06-27 15:33:03
  * @LastEditors  : HCLonely
  * @FilePath     : /ip-sign/src/services/geoService.ts
  * @Description  :
  */
 const axios_1 = __importDefault(require("axios"));
 const IPINFO_TOKEN = process.env.IPINFO_TOKEN || '';
-async function getGeoData(ip) {
+const NSMAO_TOKEN = process.env.NSMAO_TOKEN || '';
+async function getGeoDataByIpInfo(ip) {
+    // 处理本地IP的特殊情况
+    if (ip === '::1' || ip === '127.0.0.1') {
+        return {
+            ip: '127.0.0.1',
+            city: 'Localhost',
+            region: 'Development',
+            country: 'Local',
+            loc: '0,0',
+            timezone: 'UTC'
+        };
+    }
     try {
         const response = await axios_1.default.get(`https://ipinfo.io/${ip}?token=${IPINFO_TOKEN}`);
         return {
             ip: response.data.ip,
-            city: response.data.city || 'Unknown',
-            region: response.data.region || 'Unknown',
-            country: response.data.country || 'Unknown',
+            city: response.data.city || '未知',
+            region: response.data.region || '未知',
+            country: response.data.country || '未知',
             loc: response.data.loc || '0,0',
             timezone: response.data.timezone || 'UTC'
         };
@@ -30,12 +43,50 @@ async function getGeoData(ip) {
         console.error('Error fetching geo data:', error);
         return {
             ip,
-            city: 'Unknown',
-            region: 'Unknown',
-            country: 'Unknown',
+            city: '未知',
+            region: '未知',
+            country: '未知',
             loc: '0,0',
             timezone: 'UTC'
         };
     }
 }
-//# sourceMappingURL=geoService.js.map
+async function getGeoDataByNsmao(ip) {
+    // 处理本地IP的特殊情况
+    if (ip === '::1' || ip === '127.0.0.1') {
+        return {
+            ip: '127.0.0.1',
+            city: 'Localhost',
+            region: 'Development',
+            country: 'Local',
+            loc: '0,0',
+            timezone: 'UTC'
+        };
+    }
+    try {
+        const response = await axios_1.default.get(`https://api.nsmao.net/api/ipip/query?key=${NSMAO_TOKEN}&ip=${ip}`, {
+            validateStatus: function (status) {
+                return status >= 200 && status < 303; // 只接受200-303之间的状态码
+            }
+        });
+        return {
+            ip: response.data.data.ip,
+            city: response.data.data.city || '未知',
+            region: response.data.data.province || '未知',
+            country: response.data.data.country || '未知',
+            loc: `${response.data.data.lat},${response.data.data.lng}`,
+            timezone: 'UTC'
+        };
+    }
+    catch (error) {
+        console.error('Error fetching geo data:', error);
+        return {
+            ip,
+            city: '未知',
+            region: '未知',
+            country: '未知',
+            loc: '0,0',
+            timezone: 'UTC'
+        };
+    }
+}
