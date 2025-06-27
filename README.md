@@ -39,8 +39,8 @@ https://你的域名/signature
 
 1. 克隆仓库：
    ```bash
-   git clone https://github.com/HCLonely/ipSignImage.git
-   cd ipSignImage
+   git clone https://github.com/HCLonely/ipSignature.git
+   cd ipSignature
    ```
 
 2. 安装依赖：
@@ -76,7 +76,7 @@ https://你的域名/signature
 
 #### 一键部署
 
-[![部署到 Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FHCLonely%2FipSignImage&env=IPINFO_TOKEN,NSMAO_TOKEN,OPENWEATHER_API_KEY,BACKGROUND_IMAGE_URL&envDescription=需要配置相关API密钥才能正常使用&envLink=https%3A%2F%2Fgithub.com%2FHCLonely%2FipSignImage%23环境变量说明)
+[![部署到 Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FHCLonely%2FipSignature&env=IPINFO_TOKEN,NSMAO_TOKEN,OPENWEATHER_API_KEY,BACKGROUND_IMAGE_URL&envDescription=需要配置相关API密钥才能正常使用&envLink=https%3A%2F%2Fgithub.com%2FHCLonely%2FipSignature%23环境变量说明)
 
 #### 手动部署步骤
 
