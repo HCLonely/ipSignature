@@ -1,7 +1,7 @@
 /*
  * @Author       : HCLonely
  * @Date         : 2025-06-27 09:55:59
- * @LastEditTime : 2025-06-27 22:11:45
+ * @LastEditTime : 2025-06-27 22:40:42
  * @LastEditors  : HCLonely
  * @FilePath     : /ip-sign/src/utils/helpers.ts
  * @Description  : 辅助函数
@@ -140,7 +140,7 @@ export function parseUserAgent(userAgent: string): { os: string; browser: string
       browser = 'IE 11';
     }
   } else if (userAgent.includes('github-camo')) {
-    browser = userAgent;
+    browser = userAgent.split(' ')[0];
   }
 
   return { os, browser };
