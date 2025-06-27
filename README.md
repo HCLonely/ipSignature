@@ -11,6 +11,10 @@
 - 支持图片缓存
 - 支持跨域访问
 
+## 示例
+
+![IP Signature Example](https://ip-sign-image.vercel.app/signature)
+
 ## 使用方法
 
 ### 基本用法
