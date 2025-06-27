@@ -1,7 +1,7 @@
 /*
  * @Author       : HCLonely
  * @Date         : 2025-06-27 09:57:01
- * @LastEditTime : 2025-06-27 17:08:12
+ * @LastEditTime : 2025-06-27 21:17:29
  * @LastEditors  : HCLonely
  * @FilePath     : /ip-sign/src/services/imageService.ts
  * @Description  :
@@ -21,6 +21,9 @@ registerFont(path.join(fontsDir, 'SourceHanSansSC-Regular.otf'), {
 registerFont(path.join(fontsDir, 'SourceHanSansSC-Bold.otf'), {
   family: 'Source Han Sans SC',
   weight: 'bold'
+});
+registerFont(path.join(fontsDir, 'oldenglishtextmt.TTF'), {
+  family: 'Old English Text MT'
 });
 
 // 加载图标
@@ -147,7 +150,7 @@ export async function generateSignatureImage(data: SignatureData): Promise<Buffe
   ctx.shadowOffsetY = 0;
 
   // 设置字体
-  const titleFont = 'bold 30px "Source Han Sans SC"';
+  const titleFont = '36px "Old English Text MT"';
   const headerFont = 'bold 24px "Source Han Sans SC"';
   const textFont = '20px "Source Han Sans SC"';
 
@@ -157,8 +160,9 @@ export async function generateSignatureImage(data: SignatureData): Promise<Buffe
   // 绘制标题
   ctx.fillStyle = '#ffffff';
   ctx.font = titleFont;
+  ctx.textAlign = 'center';
+  ctx.fillText('IP Signature'.toUpperCase(), layout.width / 2, currentY);
   ctx.textAlign = 'left';
-  ctx.fillText('IP 签名档', layout.padding + 15, currentY);
 
   // 绘制发光分隔线
   ctx.beginPath();
