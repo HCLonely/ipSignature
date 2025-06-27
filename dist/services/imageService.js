@@ -8,7 +8,7 @@ exports.createErrorImage = createErrorImage;
 /*
  * @Author       : HCLonely
  * @Date         : 2025-06-27 09:57:01
- * @LastEditTime : 2025-06-27 15:40:16
+ * @LastEditTime : 2025-06-27 16:37:01
  * @LastEditors  : HCLonely
  * @FilePath     : /ip-sign/src/services/imageService.ts
  * @Description  :
@@ -26,6 +26,10 @@ const fontsDir = path_1.default.resolve(__dirname, '../../assets/fonts');
 (0, canvas_1.registerFont)(path_1.default.join(fontsDir, 'SourceHanSansSC-Bold.otf'), {
     family: 'Source Han Sans SC',
     weight: 'bold'
+});
+// 注册 emoji 字体
+(0, canvas_1.registerFont)(path_1.default.join(fontsDir, 'NotoColorEmoji.ttf'), {
+    family: 'Noto Color Emoji'
 });
 async function generateSignatureImage(data) {
     // 布局参数
@@ -152,8 +156,10 @@ async function generateSignatureImage(data) {
     ctx.font = headerFont;
     ctx.fillStyle = '#ffffff';
     // 添加定位图标
-    ctx.font = '26px "Source Han Sans SC"';
+    ctx.font = '26px "Noto Color Emoji"';
+    ctx.textBaseline = 'middle';
     ctx.fillText('📍', layout.padding + 15, currentY);
+    ctx.textBaseline = 'alphabetic';
     // 绘制网络信息标题
     ctx.font = headerFont;
     ctx.fillText('网络信息', layout.padding + 45, currentY);
@@ -212,9 +218,11 @@ async function generateSignatureImage(data) {
     // 绘制天气信息标题
     ctx.font = headerFont;
     // 添加温度计图标
-    ctx.font = '26px "Source Han Sans SC"';
+    ctx.font = '26px "Noto Color Emoji"';
+    ctx.textBaseline = 'middle';
     ctx.fillStyle = '#ffffff';
     ctx.fillText('🌡️', layout.padding + 15, currentY);
+    ctx.textBaseline = 'alphabetic';
     // 绘制天气信息标题
     ctx.font = headerFont;
     ctx.fillStyle = '#ffffff';

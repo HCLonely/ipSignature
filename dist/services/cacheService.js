@@ -2,7 +2,7 @@
 /*
  * @Author       : HCLonely
  * @Date         : 2025-06-27 15:10:15
- * @LastEditTime : 2025-06-27 15:12:26
+ * @LastEditTime : 2025-06-27 16:11:37
  * @LastEditors  : HCLonely
  * @FilePath     : /ip-sign/src/services/cacheService.ts
  * @Description  : 缓存服务
@@ -21,7 +21,7 @@ class CacheService {
         this.hitokotoCache = {};
         this.weatherCacheDuration = 30 * 60 * 1000; // 30分钟
         this.hitokotoCacheDuration = 5 * 60 * 1000; // 5分钟
-        this.geoCacheFile = path_1.default.join(process.cwd(), 'cache/data', 'geo-cache.json');
+        this.geoCacheFile = path_1.default.join(process.cwd(), 'cache', 'geo-cache.json');
         // 创建缓存目录
         const cacheDir = path_1.default.dirname(this.geoCacheFile);
         if (!fs_1.default.existsSync(cacheDir)) {

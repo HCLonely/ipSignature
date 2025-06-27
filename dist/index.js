@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /*
  * @Author       : HCLonely
  * @Date         : 2025-06-27 09:57:15
- * @LastEditTime : 2025-06-27 15:49:32
+ * @LastEditTime : 2025-06-27 16:20:12
  * @LastEditors  : HCLonely
  * @FilePath     : /ip-sign/src/index.ts
  * @Description  :
@@ -34,16 +34,22 @@ app.use((__, res, next) => {
 });
 // 中间件
 app.use(request_ip_1.default.mw());
-// Windows 兼容性 - 处理代理后的 IP
-app.use((req, __, next) => {
-    // 处理代理后的 IP
+// 获取客户端IP的函数
+function getClientIp(req) {
+    // 尝试从 x-forwarded-for 获取
     const forwardedIps = req.headers['x-forwarded-for'];
     if (forwardedIps && typeof forwardedIps === 'string') {
         const ips = forwardedIps.split(',');
-        req.clientIp = ips[0].trim();
+        return ips[0].trim();
     }
-    next();
-});
+    // 尝试从 requestIp 中间件获取
+    const ipFromMiddleware = request_ip_1.default.getClientIp(req);
+    if (ipFromMiddleware) {
+        return ipFromMiddleware;
+    }
+    // 最后尝试从 req.ip 获取
+    return req.ip || '';
+}
 // 获取公网IP的函数
 async function getPublicIP() {
     try {
@@ -122,7 +128,7 @@ async function getWeatherDataWithCache(lat, lon) {
 // 路由
 app.get('/signature', async (req, res) => {
     try {
-        let clientIp = req.clientIp || req.ip;
+        let clientIp = getClientIp(req);
         console.log(`[请求] 原始 IP: ${clientIp}`);
         if (!clientIp) {
             res.send((0, imageService_1.createErrorImage)('无效的IP地址'));
@@ -171,9 +177,8 @@ app.get('/signature', async (req, res) => {
         res.set({
             'Content-Type': 'image/png',
             'Content-Length': imageBuffer.length,
-            'Cache-Control': 'no-cache, no-store, must-revalidate',
-            'Pragma': 'no-cache',
-            'Expires': '0'
+            'Cache-Control': 'public, max-age=600',
+            'Expires': new Date(Date.now() + 600000).toUTCString()
         });
         // 发送图片
         res.send(imageBuffer);
