@@ -87,7 +87,7 @@ export async function getBackgroundImage(): Promise<string> {
   const bgUrl = process.env.BACKGROUND_IMAGE_URL;
   if (!bgUrl) {
     console.log('[背景] 未设置背景图片URL (BACKGROUND_IMAGE_URL), 使用默认背景图片');
-    return path.resolve(__dirname, '../../assets/images/default.jpg');
+    return path.resolve(__dirname, '../../assets/images/default.png');
   }
 
   // 检查URL中的图片格式
