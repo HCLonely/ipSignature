@@ -1,7 +1,7 @@
 /*
  * @Author       : HCLonely
  * @Date         : 2025-06-27 09:55:59
- * @LastEditTime : 2025-06-27 21:51:15
+ * @LastEditTime : 2025-06-27 22:11:45
  * @LastEditors  : HCLonely
  * @FilePath     : /ip-sign/src/utils/helpers.ts
  * @Description  :
@@ -95,6 +95,8 @@ export function parseUserAgent(userAgent: string): { os: string; browser: string
     os = 'Chrome OS';
   } else if (userAgent.includes('FreeBSD')) {
     os = 'FreeBSD';
+  } else if (userAgent.includes('github')) {
+    os = 'GitHub';
   }
 
   // 识别浏览器
@@ -137,6 +139,8 @@ export function parseUserAgent(userAgent: string): { os: string; browser: string
       // For IE 11
       browser = 'IE 11';
     }
+  } else if (userAgent.includes('github-camo')) {
+    browser = userAgent;
   }
 
   return { os, browser };

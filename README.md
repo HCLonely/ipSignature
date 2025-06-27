@@ -13,7 +13,7 @@
 
 ## 示例
 
-![IP Signature Example](https://ip-sign-image.vercel.app/signature?time=1)
+![IP Signature Example](https://ip-sign-image.vercel.app/signature)
 
 ## 使用方法
 
