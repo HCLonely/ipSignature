@@ -11,7 +11,7 @@ Thumbs.db
 *.log
 
 # 缓存文件
-cache
+cache/*
 
 .history
 

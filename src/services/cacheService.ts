@@ -1,7 +1,7 @@
 /*
  * @Author       : HCLonely
  * @Date         : 2025-06-27 15:10:15
- * @LastEditTime : 2025-06-27 15:12:26
+ * @LastEditTime : 2025-06-27 16:11:37
  * @LastEditors  : HCLonely
  * @FilePath     : /ip-sign/src/services/cacheService.ts
  * @Description  : 缓存服务
@@ -27,7 +27,7 @@ class CacheService {
   private hitokotoCache: CacheStore = {};
   private readonly weatherCacheDuration = 30 * 60 * 1000;  // 30分钟
   private readonly hitokotoCacheDuration = 5 * 60 * 1000;  // 5分钟
-  private readonly geoCacheFile = path.join(process.cwd(), 'cache/data', 'geo-cache.json');
+  private readonly geoCacheFile = path.join(process.cwd(), 'cache', 'geo-cache.json');
 
   private constructor() {
     // 创建缓存目录
