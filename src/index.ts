@@ -1,7 +1,7 @@
 /*
  * @Author       : HCLonely
  * @Date         : 2025-06-27 09:57:15
- * @LastEditTime : 2025-06-27 16:20:12
+ * @LastEditTime : 2025-06-27 16:51:41
  * @LastEditors  : HCLonely
  * @FilePath     : /ip-sign/src/index.ts
  * @Description  :
@@ -21,6 +21,10 @@ import { initBackgroundService } from './services/backgroundService';
 import { cacheService } from './services/cacheService';
 import { getHitokoto } from './services/hitokotoService';
 
+// 解析命令行参数
+const args = process.argv.slice(2);
+const usePublicIP = args.includes('--public-ip') || args.includes('-p');
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -34,6 +38,11 @@ app.use((__, res, next) => {
 
 // 中间件
 app.use(requestIp.mw());
+
+// 根路由重定向到 GitHub 仓库
+app.get('/', (__, res) => {
+  res.redirect('https://github.com/HCLonely/ipSignImage');
+});
 
 // 获取客户端IP的函数
 function getClientIp(req: express.Request): string {
@@ -149,11 +158,11 @@ app.get('/signature', async (req, res) => {
       return;
     }
 
-    // 在开发环境下处理本地IP
-    if (process.env.NODE_ENV === 'development' && isLocalIP(clientIp)) {
-      console.log('[开发环境] 检测到本地IP，尝试获取公网IP');
+    // 根据启动参数处理本地IP
+    if (usePublicIP && isLocalIP(clientIp)) {
+      console.log('[IP处理] 检测到本地IP，尝试获取公网IP');
       clientIp = await getPublicIP();
-      console.log(`[开发环境] 使用公网IP: ${clientIp}`);
+      console.log(`[IP处理] 使用公网IP: ${clientIp}`);
     }
 
     if (!clientIp) {
@@ -239,6 +248,7 @@ async function startServer() {
     app.listen(PORT, () => {
       console.log(`[服务器] 正在运行: http://localhost:${PORT}`);
       console.log(`[服务器] 签名端点: http://localhost:${PORT}/signature`);
+      console.log(`[服务器] 本地IP处理: ${usePublicIP ? '自动获取公网IP' : '使用本地IP'}`);
       console.log('[缓存] IP数据缓存时间: 长期');
       console.log('[缓存] 天气数据缓存时间: 30分钟');
       console.log('[缓存] 一言数据缓存时间: 5分钟');
