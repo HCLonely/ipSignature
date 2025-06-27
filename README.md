@@ -55,9 +55,9 @@ https://你的域名/signature
 3. 配置环境变量：
    ```bash
    # 复制环境变量示例文件
-   cp .env.example .env
+   cp .env.example .env.production
 
-   # 然后编辑 .env 文件，修改相关配置
+   # 然后编辑 .env.production 文件，修改相关配置
    # 至少需要配置以下变量之一：
    # - IPINFO_TOKEN（ipinfo.io的API令牌）
    # - NSMAO_TOKEN（nsmao的API令牌）

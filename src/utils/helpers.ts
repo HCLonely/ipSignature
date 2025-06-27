@@ -1,7 +1,7 @@
 /*
  * @Author       : HCLonely
  * @Date         : 2025-06-27 09:55:59
- * @LastEditTime : 2025-06-27 21:34:05
+ * @LastEditTime : 2025-06-27 21:51:15
  * @LastEditors  : HCLonely
  * @FilePath     : /ip-sign/src/utils/helpers.ts
  * @Description  :
@@ -38,6 +38,7 @@ export function getWeatherIconUrl(iconCode: string): string {
 }
 
 export function parseUserAgent(userAgent: string): { os: string; browser: string } {
+  console.log(`userAgent: ${userAgent}`);
   let os = '未知系统';
   let browser = '未知浏览器';
 
