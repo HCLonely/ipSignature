@@ -1,7 +1,7 @@
 /*
  * @Author       : HCLonely
  * @Date         : 2025-06-27 09:57:01
- * @LastEditTime : 2025-06-28 10:00:30
+ * @LastEditTime : 2025-06-28 17:51:40
  * @LastEditors  : HCLonely
  * @FilePath     : /ip-sign/src/services/imageService.ts
  * @Description  : 图片生成服务
@@ -12,7 +12,7 @@ import { getWeatherIconUrl } from '../utils/helpers';
 import path from 'path';
 import { prepareBackground } from './backgroundService';
 
-// 注册中文字体
+// 注册字体
 const fontsDir = path.resolve(__dirname, '../../assets/fonts');
 registerFont(path.join(fontsDir, 'SourceHanSansSC-Regular.otf'), {
   family: 'Source Han Sans SC',
@@ -30,48 +30,81 @@ registerFont(path.join(fontsDir, 'oldenglishtextmt.ttf'), {
 const netIcon = loadImage(path.resolve(__dirname, '../../assets/images/net.png'));
 const weatherIcon = loadImage(path.resolve(__dirname, '../../assets/images/weather.png'));
 
-// 布局参数接口
-interface LayoutParams {
-  width: number;
-  height: number;
-  padding: number;
-  sectionSpacing: number;
-  lineHeight: number;
+// 默认图片尺寸
+const DEFAULT_WIDTH = 752;
+const DEFAULT_HEIGHT = 423;
+
+// 计算缩放后的尺寸
+function calculateScaledDimensions(width: number | undefined, height: number | undefined): { width: number; height: number } {
+  // 如果没有指定任何尺寸，使用默认尺寸
+  if (!width && !height) {
+    return { width: DEFAULT_WIDTH, height: DEFAULT_HEIGHT };
+  }
+
+  // 如果指定了高度，按高度等比例缩放
+  if (height) {
+    const scale = height / DEFAULT_HEIGHT;
+    return {
+      width: Math.round(DEFAULT_WIDTH * scale),
+      height
+    };
+  }
+
+  // 如果只指定了宽度，按宽度等比例缩放
+  if (width) {
+    const scale = width / DEFAULT_WIDTH;
+    return {
+      width,
+      height: Math.round(DEFAULT_HEIGHT * scale)
+    };
+  }
+
+  // 默认返回原始尺寸（不应该到达这里）
+  return { width: DEFAULT_WIDTH, height: DEFAULT_HEIGHT };
 }
 
-export async function generateSignatureImage(data: SignatureData): Promise<Buffer> {
-  // 布局参数
-  const layout: LayoutParams = {
-    width: 700,
-    height: 420,
-    padding: 25,
-    sectionSpacing: 45,
-    lineHeight: 35
-  };
+export async function generateSignatureImage(data: SignatureData, width?: number, height?: number): Promise<Buffer> {
+  // 计算最终尺寸
+  const dimensions = calculateScaledDimensions(width, height);
+  console.log(`[图片] 生成尺寸: ${dimensions.width}x${dimensions.height}`);
 
   // 创建画布
-  const canvas = createCanvas(layout.width, layout.height);
+  const canvas = await prepareBackground(dimensions.width, dimensions.height);
   const ctx = canvas.getContext('2d');
+
+  // 保存当前状态
+  ctx.save();
+
+  // 设置字体
+  const scale = dimensions.height / DEFAULT_HEIGHT;
+  const fontSize = Math.round(20 * scale);
+  const headerFontSize = Math.round(28 * scale);
+  const titleFontSize = Math.round(36 * scale);
+
+  // 设置布局参数
+  const padding = Math.round(25 * scale);
+  const lineHeight = Math.round(35 * scale);
+  const sectionSpacing = Math.round(45 * scale);
 
   // 使用背景图片
   try {
-    const backgroundCanvas = await prepareBackground(layout.width, layout.height);
+    const backgroundCanvas = await prepareBackground(dimensions.width, dimensions.height);
     ctx.drawImage(backgroundCanvas, 0, 0);
   } catch (error) {
     console.error('[错误] 加载背景图片失败:', error);
     // 使用渐变色作为备用背景
-    const gradient = ctx.createLinearGradient(0, 0, layout.width, layout.height);
+    const gradient = ctx.createLinearGradient(0, 0, dimensions.width, dimensions.height);
     gradient.addColorStop(0, '#2c3e50');
     gradient.addColorStop(0.5, '#3498db');
     gradient.addColorStop(1, '#2980b9');
     ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, layout.width, layout.height);
+    ctx.fillRect(0, 0, dimensions.width, dimensions.height);
   }
 
   // 添加纹理效果
   ctx.fillStyle = 'rgba(255, 255, 255, 0.03)';
-  for (let i = 0; i < layout.height; i += 3) {
-    ctx.fillRect(0, i, layout.width, 1);
+  for (let i = 0; i < dimensions.height; i += 3) {
+    ctx.fillRect(0, i, dimensions.width, 1);
   }
 
   // 添加水印和版权信息
@@ -80,7 +113,7 @@ export async function generateSignatureImage(data: SignatureData): Promise<Buffe
   ctx.shadowOffsetX = 1;
   ctx.shadowOffsetY = 1;
   ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
-  const smallFont = '14px "Source Han Sans SC"';
+  const smallFont = `${Math.round(16 * scale)}px "Source Han Sans SC"`;
   ctx.font = smallFont;
 
   // 添加版权信息（左对齐）
@@ -88,7 +121,7 @@ export async function generateSignatureImage(data: SignatureData): Promise<Buffe
   const startYear = 2025;
   const currentYear = new Date().getFullYear();
   const yearStr = currentYear > startYear ? `${startYear}-${currentYear}` : startYear.toString();
-  ctx.fillText(`© ${yearStr} Powered by HCLonely`, 10, layout.height - 8);
+  ctx.fillText(`© ${yearStr} Powered by HCLonely`, 10, dimensions.height - 8);
 
   // 添加日期水印（右对齐）
   ctx.textAlign = 'right';
@@ -104,8 +137,8 @@ export async function generateSignatureImage(data: SignatureData): Promise<Buffe
   const weekStr = new Intl.DateTimeFormat('zh-CN', dateOptions2).format(new Date());
   ctx.fillText(
     'IP 签名服务器 • ' + dateStr + ' ' + weekStr,
-    layout.width - 10,
-    layout.height - 8
+    dimensions.width - 10,
+    dimensions.height - 8
   );
 
   // 重置阴影
@@ -115,10 +148,10 @@ export async function generateSignatureImage(data: SignatureData): Promise<Buffe
   ctx.shadowOffsetY = 0;
 
   // 添加主要内容区域
-  const contentX = layout.padding;
-  const contentY = layout.padding;
-  const contentWidth = layout.width - layout.padding * 2;
-  const contentHeight = layout.height - layout.padding * 2;
+  const contentX = padding;
+  const contentY = padding;
+  const contentWidth = dimensions.width - padding * 2;
+  const contentHeight = dimensions.height - padding * 2;
 
   // 绘制圆角矩形
   ctx.beginPath();
@@ -150,38 +183,56 @@ export async function generateSignatureImage(data: SignatureData): Promise<Buffe
   ctx.shadowOffsetY = 0;
 
   // 设置字体
-  const titleFont = '36px "Old English Text MT"';
-  const headerFont = 'bold 24px "Source Han Sans SC"';
-  const textFont = '20px "Source Han Sans SC"';
+  const titleFont = `${titleFontSize}px "Old English Text MT"`;
+  const headerFont = `bold ${headerFontSize}px "Source Han Sans SC"`;
+  const textFont = `${fontSize}px "Source Han Sans SC"`;
 
   // 当前位置跟踪
-  let currentY = layout.padding + 35;
+  let currentY = padding + Math.round(35 * scale);
 
   // 绘制标题
   ctx.fillStyle = '#ffffff';
   ctx.font = titleFont;
   ctx.textAlign = 'center';
-  ctx.fillText('welcome'.toUpperCase(), layout.width / 2, currentY);
+
+  // 添加标题阴影效果
+  ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+  ctx.shadowBlur = Math.round(4 * scale);
+  ctx.shadowOffsetX = Math.round(2 * scale);
+  ctx.shadowOffsetY = Math.round(2 * scale);
+
+  ctx.fillText('welcome'.toUpperCase(), dimensions.width / 2, currentY);
   ctx.textAlign = 'left';
 
+  // 重置阴影
+  ctx.shadowColor = 'transparent';
+  ctx.shadowBlur = 0;
+  ctx.shadowOffsetX = 0;
+  ctx.shadowOffsetY = 0;
+
   // 绘制发光分隔线
+  const lineY = currentY + Math.round(15 * scale);
+  const lineStartX = padding + Math.round(15 * scale);
+  const lineEndX = dimensions.width - padding - Math.round(15 * scale);
+
+  // 主分隔线
   ctx.beginPath();
-  ctx.moveTo(layout.padding + 15, currentY + 15);
-  ctx.lineTo(layout.width - layout.padding - 15, currentY + 15);
+  ctx.moveTo(lineStartX, lineY);
+  ctx.lineTo(lineEndX, lineY);
   ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
-  ctx.lineWidth = 2;
+  ctx.lineWidth = Math.round(2 * scale);
   ctx.stroke();
 
-  // 添加发光效果
+  // 发光效果
   ctx.beginPath();
-  ctx.moveTo(layout.padding + 15, currentY + 15);
-  ctx.lineTo(layout.width - layout.padding - 15, currentY + 15);
+  ctx.moveTo(lineStartX, lineY);
+  ctx.lineTo(lineEndX, lineY);
   ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
-  ctx.lineWidth = 4;
+  ctx.lineWidth = Math.round(4 * scale);
   ctx.stroke();
 
   // 移动到下一部分
-  currentY += layout.sectionSpacing + 20;
+  currentY += Math.round(sectionSpacing * 1.2);
 
   // 绘制IP信息
   ctx.font = headerFont;
@@ -189,20 +240,24 @@ export async function generateSignatureImage(data: SignatureData): Promise<Buffe
 
   // 添加定位图标
   const icon = await netIcon;
-  ctx.drawImage(icon, layout.padding + 15, currentY - 22, 26, 26);
+  const iconSize = Math.round(24 * scale);
+  const iconOffset = Math.round(22 * scale);
+  const iconPadding = Math.round(10 * scale);
+  const titleOffset = Math.round(35 * scale);
+  ctx.drawImage(icon, padding + iconPadding, currentY - iconOffset, iconSize, iconSize);
 
   // 绘制网络信息标题
   ctx.font = headerFont;
-  ctx.fillText('网络信息', layout.padding + 45, currentY);
+  ctx.fillText('网络信息', padding + iconPadding + iconSize + Math.round(10 * scale), currentY);
 
   // 移动到信息行
-  currentY += layout.lineHeight;
+  currentY += lineHeight;
 
   // 文字阴影效果
   ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
-  ctx.shadowBlur = 3;
-  ctx.shadowOffsetX = 1;
-  ctx.shadowOffsetY = 1;
+  ctx.shadowBlur = Math.round(3 * scale);
+  ctx.shadowOffsetX = Math.round(1 * scale);
+  ctx.shadowOffsetY = Math.round(1 * scale);
 
   // 设置标签颜色（白色）
   ctx.fillStyle = '#ffffff';
@@ -211,32 +266,33 @@ export async function generateSignatureImage(data: SignatureData): Promise<Buffe
   // IP地址
   const ipLabel = 'IP 地址: ';
   const ipLabelWidth = ctx.measureText(ipLabel).width;
-  ctx.fillText(ipLabel, layout.padding + 25, currentY);
+  const textPadding = Math.round(25 * scale);
+  ctx.fillText(ipLabel, padding + textPadding, currentY);
 
   // IP值使用浅蓝色
   ctx.fillStyle = 'rgba(135, 206, 250, 0.95)';
   const ipValue = data.ip;
-  ctx.fillText(ipValue, layout.padding + 25 + ipLabelWidth, currentY);
+  ctx.fillText(ipValue, padding + textPadding + ipLabelWidth, currentY);
 
   // 操作系统（在右侧）
   ctx.fillStyle = '#ffffff';
   const osLabel = '操作系统: ';
   const osLabelWidth = ctx.measureText(osLabel).width;
-  const rightColumnX = layout.width / 2 + 50; // 右侧列的起始位置
+  const rightColumnX = dimensions.width / 2 + 50; // 右侧列的起始位置
   ctx.fillText(osLabel, rightColumnX, currentY);
 
   ctx.fillStyle = 'rgba(135, 206, 250, 0.95)';
   ctx.fillText(data.systemInfo.os, rightColumnX + osLabelWidth, currentY);
-  currentY += layout.lineHeight;
+  currentY += lineHeight;
 
   // 地理位置
   ctx.fillStyle = '#ffffff';
   const locationLabel = '地理位置: ';
   const locationLabelWidth = ctx.measureText(locationLabel).width;
-  ctx.fillText(locationLabel, layout.padding + 25, currentY);
+  ctx.fillText(locationLabel, padding + textPadding, currentY);
 
   ctx.fillStyle = 'rgba(135, 206, 250, 0.95)';
-  ctx.fillText(data.location, layout.padding + 25 + locationLabelWidth, currentY);
+  ctx.fillText(data.location, padding + textPadding + locationLabelWidth, currentY);
 
   // 浏览器（在右侧）
   ctx.fillStyle = '#ffffff';
@@ -246,83 +302,92 @@ export async function generateSignatureImage(data: SignatureData): Promise<Buffe
 
   ctx.fillStyle = 'rgba(135, 206, 250, 0.95)';
   ctx.fillText(data.systemInfo.browser, rightColumnX + browserLabelWidth, currentY);
-  currentY += layout.lineHeight;
+  currentY += lineHeight;
 
   // 当地时间
   ctx.fillStyle = '#ffffff';
   const timeLabel = '当地时间: ';
   const timeLabelWidth = ctx.measureText(timeLabel).width;
-  ctx.fillText(timeLabel, layout.padding + 25, currentY);
+  ctx.fillText(timeLabel, padding + textPadding, currentY);
 
   ctx.fillStyle = 'rgba(135, 206, 250, 0.95)';
-  ctx.fillText(data.time, layout.padding + 25 + timeLabelWidth, currentY);
-  currentY += layout.lineHeight;
+  ctx.fillText(data.time, padding + textPadding + timeLabelWidth, currentY);
+  currentY += lineHeight;
 
   // 移动到天气部分
-  currentY += layout.sectionSpacing - layout.lineHeight;
+  currentY += sectionSpacing - lineHeight + 10;
 
   // 绘制天气信息标题
   ctx.font = headerFont;
 
   // 添加温度计图标
   const tempIcon = await weatherIcon;
-  ctx.drawImage(tempIcon, layout.padding + 15, currentY - 26, 26, 26);
+  ctx.drawImage(tempIcon, padding + iconPadding, currentY - iconOffset, iconSize, iconSize);
 
   // 绘制天气信息标题
   ctx.font = headerFont;
   ctx.fillStyle = '#ffffff';
-  ctx.fillText('天气信息', layout.padding + 45, currentY);
+  ctx.fillText('天气信息', padding + iconPadding + iconSize + Math.round(10 * scale), currentY);
 
   // 移动到天气行
-  currentY += layout.lineHeight;
+  currentY += lineHeight;
 
   // 天气图标位置
-  const weatherIconX = layout.width - layout.padding - 100;
-  const weatherIconY = currentY - 45;
+  const weatherIconX = dimensions.width - padding - Math.round(550 * scale);
+  const weatherIconY = currentY - Math.round(72 * scale);
 
   // 绘制天气描述
   ctx.font = textFont;
   ctx.fillStyle = '#ffffff';
   const weatherLabel = '天气状况: ';
   const weatherLabelWidth = ctx.measureText(weatherLabel).width;
-  ctx.fillText(weatherLabel, layout.padding + 25, currentY);
+  ctx.fillText(weatherLabel, padding + textPadding, currentY);
 
   ctx.fillStyle = 'rgba(135, 206, 250, 0.95)';
-  ctx.fillText(data.weather.weather.description, layout.padding + 25 + weatherLabelWidth, currentY);
+  ctx.fillText(data.weather.weather.description, padding + textPadding + weatherLabelWidth, currentY);
 
   // 移动到温度行
-  currentY += layout.lineHeight;
+  currentY += lineHeight;
+
+  // 计算温度信息的布局
+  const columnGap = Math.round(25 * scale);
+  let currentX = padding + textPadding;
 
   // 绘制温度信息
   ctx.fillStyle = '#ffffff';
   const tempLabel = '温度: ';
   const tempLabelWidth = ctx.measureText(tempLabel).width;
-  ctx.fillText(tempLabel, layout.padding + 25, currentY);
+  ctx.fillText(tempLabel, currentX, currentY);
 
+  currentX += tempLabelWidth;
   ctx.fillStyle = 'rgba(135, 206, 250, 0.95)';
   const tempValue = `${data.weather.temp.toFixed(1)}°C`;
   const tempValueWidth = ctx.measureText(tempValue).width;
-  ctx.fillText(tempValue, layout.padding + 25 + tempLabelWidth, currentY);
+  ctx.fillText(tempValue, currentX, currentY);
 
   // 体感温度
+  currentX += tempValueWidth + columnGap;
   ctx.fillStyle = '#ffffff';
   const feelsLikeLabel = '体感温度: ';
   const feelsLikeLabelWidth = ctx.measureText(feelsLikeLabel).width;
-  ctx.fillText(feelsLikeLabel, layout.padding + 25 + tempLabelWidth + tempValueWidth + 25, currentY);
+  ctx.fillText(feelsLikeLabel, currentX, currentY);
 
+  currentX += feelsLikeLabelWidth;
   ctx.fillStyle = 'rgba(135, 206, 250, 0.95)';
   const feelsLikeValue = `${data.weather.feels_like.toFixed(1)}°C`;
   const feelsLikeValueWidth = ctx.measureText(feelsLikeValue).width;
-  ctx.fillText(feelsLikeValue, layout.padding + 25 + tempLabelWidth + tempValueWidth + 25 + feelsLikeLabelWidth, currentY);
+  ctx.fillText(feelsLikeValue, currentX, currentY);
 
   // 湿度
+  currentX += feelsLikeValueWidth + columnGap;
   ctx.fillStyle = '#ffffff';
   const humidityLabel = '湿度: ';
   const humidityLabelWidth = ctx.measureText(humidityLabel).width;
-  ctx.fillText(humidityLabel, layout.padding + 25 + tempLabelWidth + tempValueWidth + feelsLikeLabelWidth + feelsLikeValueWidth + 50, currentY);
+  ctx.fillText(humidityLabel, currentX, currentY);
 
+  currentX += humidityLabelWidth;
   ctx.fillStyle = 'rgba(135, 206, 250, 0.95)';
-  ctx.fillText(`${data.weather.humidity}%`, layout.padding + 25 + tempLabelWidth + tempValueWidth + feelsLikeLabelWidth + feelsLikeValueWidth + 50 + humidityLabelWidth, currentY);
+  ctx.fillText(`${data.weather.humidity}%`, currentX, currentY);
 
   // 重置阴影
   ctx.shadowColor = 'transparent';
@@ -334,30 +399,24 @@ export async function generateSignatureImage(data: SignatureData): Promise<Buffe
   try {
     const iconUrl = getWeatherIconUrl(data.weather.weather.icon);
     const icon = await loadImage(iconUrl);
+    const weatherIconSize = Math.round(50 * scale);
+    const glowRadius = Math.round(30 * scale);
 
     // 添加发光背景
     const gradient = ctx.createRadialGradient(
-      weatherIconX + 35, weatherIconY + 35, 0,
-      weatherIconX + 35, weatherIconY + 35, 40
+      weatherIconX + weatherIconSize/2, weatherIconY + weatherIconSize/2, 0,
+      weatherIconX + weatherIconSize/2, weatherIconY + weatherIconSize/2, glowRadius
     );
     gradient.addColorStop(0, 'rgba(255, 255, 255, 0.3)');
     gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
 
     ctx.fillStyle = gradient;
     ctx.beginPath();
-    ctx.arc(weatherIconX + 35, weatherIconY + 35, 40, 0, Math.PI * 2);
+    ctx.arc(weatherIconX + weatherIconSize/2, weatherIconY + weatherIconSize/2, glowRadius, 0, Math.PI * 2);
     ctx.fill();
 
     // 绘制图标
-    ctx.drawImage(icon, weatherIconX, weatherIconY, 70, 70);
-
-    // 添加天气状态文字
-    ctx.font = 'bold 18px "Source Han Sans SC"';
-    ctx.textAlign = 'center';
-    ctx.fillStyle = '#ffffff';
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
-    ctx.shadowBlur = 3;
-    ctx.fillText(data.weather.weather.main, weatherIconX + 35, weatherIconY + 85);
+    ctx.drawImage(icon, weatherIconX, weatherIconY, weatherIconSize, weatherIconSize);
   } catch (error) {
     console.error('加载天气图标出错:', error);
     ctx.font = textFont;
@@ -366,15 +425,21 @@ export async function generateSignatureImage(data: SignatureData): Promise<Buffe
   }
 
   // 添加一言
-  ctx.font = '16px "Source Han Sans SC"';
+  const hitokotoFontSize = Math.round(16 * scale);
+  const hitokotoY = dimensions.height - Math.round(30 * scale);
+  ctx.font = `${hitokotoFontSize}px "Source Han Sans SC"`;
   ctx.textAlign = 'center';
   ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
   ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
-  ctx.shadowBlur = 2;
-  ctx.shadowOffsetX = 1;
-  ctx.shadowOffsetY = 1;
-  ctx.fillText(`『 ${data.hitokoto} 』`, layout.width / 2, layout.height - 35);
+  ctx.shadowBlur = Math.round(2 * scale);
+  ctx.shadowOffsetX = Math.round(1 * scale);
+  ctx.shadowOffsetY = Math.round(1 * scale);
+  ctx.fillText(`『 ${data.hitokoto} 』`, dimensions.width / 2, hitokotoY);
 
+  // 恢复状态
+  ctx.restore();
+
+  // 返回图片buffer
   return canvas.toBuffer('image/png');
 }
 

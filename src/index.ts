@@ -1,7 +1,7 @@
 /*
  * @Author       : HCLonely
  * @Date         : 2025-06-27 09:57:15
- * @LastEditTime : 2025-06-28 10:35:52
+ * @LastEditTime : 2025-06-28 17:36:20
  * @LastEditors  : HCLonely
  * @FilePath     : /ip-sign/src/index.ts
  * @Description  : 主文件
@@ -166,9 +166,30 @@ async function getWeatherDataWithCache(lat: string, lon: string): Promise<Weathe
   }
 }
 
+// 格式化文件大小
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes}B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(2)}KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(2)}MB`;
+}
+
 // 路由
 app.get('/signature', async (req, res) => {
   try {
+    // 解析宽度和高度参数
+    const width = req.query.width ? parseInt(req.query.width as string) : undefined;
+    const height = req.query.height ? parseInt(req.query.height as string) : undefined;
+
+    // 验证参数
+    if (width && (isNaN(width) || width < 100 || width > 3840)) {
+      res.status(400).send('宽度必须在 100-3840 像素之间');
+      return;
+    }
+    if (height && (isNaN(height) || height < 100 || height > 2160)) {
+      res.status(400).send('高度必须在 100-2160 像素之间');
+      return;
+    }
+
     let clientIp = getClientIp(req);
     console.log(`[请求] 原始 IP: ${clientIp}`);
 
@@ -225,7 +246,7 @@ app.get('/signature', async (req, res) => {
     console.log(`[签名数据] 准备生成图片: ${JSON.stringify(signatureData)}`);
 
     // 生成图片
-    const imageBuffer = await generateSignatureImage(signatureData);
+    const imageBuffer = await generateSignatureImage(signatureData, width, height);
 
     // 设置响应头
     res.set({
@@ -237,7 +258,7 @@ app.get('/signature', async (req, res) => {
 
     // 发送图片
     res.send(imageBuffer);
-    console.log(`[响应] 成功发送签名图片 (大小: ${imageBuffer.length} 字节)`);
+    console.log(`[响应] 成功发送签名图片 (大小: ${formatFileSize(imageBuffer.length)}, 尺寸: ${width || 752}x${height || 523})`);
   } catch (error) {
     console.error('[错误] 生成签名时出错:', error);
 
