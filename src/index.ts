@@ -1,7 +1,7 @@
 /*
  * @Author       : HCLonely
  * @Date         : 2025-06-27 09:57:15
- * @LastEditTime : 2025-06-27 22:36:06
+ * @LastEditTime : 2025-06-28 10:35:52
  * @LastEditors  : HCLonely
  * @FilePath     : /ip-sign/src/index.ts
  * @Description  : 主文件
@@ -200,9 +200,9 @@ app.get('/signature', async (req, res) => {
     console.log(`[天气] 获取到数据: ${JSON.stringify(weatherData)}`);
 
     // 获取用户代理信息
-    const userAgent = req.useragent;
-    console.log(`[userAgent] ${userAgent}`);
-    const systemInfo = parseUserAgent(userAgent);
+    const useragent = req.useragent;
+    console.log(`[userAgent] ${useragent}`);
+    const systemInfo = parseUserAgent(useragent, req.headers['user-agent'] || '');
     console.log(`[系统信息] 操作系统: ${systemInfo.os}, 浏览器: ${systemInfo.browser}`);
 
     // 获取一言
