@@ -1,7 +1,7 @@
 /*
  * @Author       : HCLonely
  * @Date         : 2025-06-27 09:57:15
- * @LastEditTime : 2025-06-28 17:36:20
+ * @LastEditTime : 2025-06-28 20:00:20
  * @LastEditors  : HCLonely
  * @FilePath     : /ip-sign/src/index.ts
  * @Description  : 主文件
@@ -222,8 +222,10 @@ app.get('/signature', async (req, res) => {
 
     // 获取用户代理信息
     const useragent = req.useragent;
-    console.log(`[userAgent] ${useragent}`);
-    const systemInfo = parseUserAgent(useragent, req.headers['user-agent'] || '');
+    const userAgent = req.headers['user-agent'] || '';
+    console.log(`[useragent]`, useragent);
+    console.log(`[userAgent]`, userAgent);
+    const systemInfo = parseUserAgent(useragent, userAgent);
     console.log(`[系统信息] 操作系统: ${systemInfo.os}, 浏览器: ${systemInfo.browser}`);
 
     // 获取一言
@@ -246,7 +248,10 @@ app.get('/signature', async (req, res) => {
     console.log(`[签名数据] 准备生成图片: ${JSON.stringify(signatureData)}`);
 
     // 生成图片
+    const startTime = performance.now();
     const imageBuffer = await generateSignatureImage(signatureData, width, height);
+    const endTime = performance.now();
+    const totalTime = (endTime - startTime).toFixed(2);
 
     // 设置响应头
     res.set({
@@ -259,6 +264,7 @@ app.get('/signature', async (req, res) => {
     // 发送图片
     res.send(imageBuffer);
     console.log(`[响应] 成功发送签名图片 (大小: ${formatFileSize(imageBuffer.length)}, 尺寸: ${width || 752}x${height || 523})`);
+    console.log(`[耗时] 总耗时: ${totalTime}ms`);
   } catch (error) {
     console.error('[错误] 生成签名时出错:', error);
 
