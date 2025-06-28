@@ -1,7 +1,7 @@
 /*
  * @Author       : HCLonely
  * @Date         : 2025-06-27 09:57:01
- * @LastEditTime : 2025-06-27 22:20:00
+ * @LastEditTime : 2025-06-28 10:00:30
  * @LastEditors  : HCLonely
  * @FilePath     : /ip-sign/src/services/imageService.ts
  * @Description  : 图片生成服务
@@ -161,7 +161,7 @@ export async function generateSignatureImage(data: SignatureData): Promise<Buffe
   ctx.fillStyle = '#ffffff';
   ctx.font = titleFont;
   ctx.textAlign = 'center';
-  ctx.fillText('IP Signature'.toUpperCase(), layout.width / 2, currentY);
+  ctx.fillText('welcome'.toUpperCase(), layout.width / 2, currentY);
   ctx.textAlign = 'left';
 
   // 绘制发光分隔线

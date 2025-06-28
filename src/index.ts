@@ -11,6 +11,7 @@ import './utils/envLoader';
 
 import express from 'express';
 import requestIp from 'request-ip';
+import useragent from 'express-useragent';
 import { getGeoDataByIpInfo, getGeoDataByNsmao } from './services/geoService';
 import { getWeatherData } from './services/weatherService';
 import { generateSignatureImage, createErrorImage } from './services/imageService';
@@ -38,6 +39,7 @@ app.use((__, res, next) => {
 
 // 中间件
 app.use(requestIp.mw());
+app.use(useragent.express());
 
 // 根路由重定向到 GitHub 仓库
 app.get('/', (__, res) => {
@@ -198,7 +200,7 @@ app.get('/signature', async (req, res) => {
     console.log(`[天气] 获取到数据: ${JSON.stringify(weatherData)}`);
 
     // 获取用户代理信息
-    const userAgent = req.headers['user-agent'] || '';
+    const userAgent = req.useragent;
     console.log(`[userAgent] ${userAgent}`);
     const systemInfo = parseUserAgent(userAgent);
     console.log(`[系统信息] 操作系统: ${systemInfo.os}, 浏览器: ${systemInfo.browser}`);
